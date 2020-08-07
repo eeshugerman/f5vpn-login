@@ -1,16 +1,12 @@
 # F5 VPN Command-line client
 
-This software allows you to connect to an [F5 Networks](https://f5.com/) VPN server (BIG-IP APM) without using their
-proprietary VPN client.
+This software allows you to connect to an [F5 Networks](https://f5.com/) VPN server (BIG-IP APM) without using their proprietary VPN client.
 
-**It is not supported or affiliated with F5 in any way.** I actually find it rather
-sad the client they provide is so terribly poor that I had to write this in
-order to get reliable access to my company's VPN.
+**It is not supported or affiliated with F5 in any way.** I actually find it rather sad the client they provide is so terribly poor that I had to write this in order to get reliable access to my company's VPN.
 
-This software does not require any software from F5 to be installed on the
-client. The only requirement is Python 3. It works on at least Linux and MacOS
-systems, but porting to any similar OS should be trivial. Porting to Windows, on
-the other hand, is probably not reasonably possible.
+This software does not require any software from F5 to be installed on the client. The only requirement is Python 3. It works on at least Linux and MacOS systems, but porting to any similar OS should be trivial. Porting to Windows, on the other hand, is probably not reasonably possible.
+
+The primary feature this fork adds over upstream is support for two-factor authentication.
 
 ## Setup
 
@@ -18,7 +14,16 @@ The script requires [`ppp`](https://www.samba.org/ppp/). If you are on Linux, in
 
 The script also requires [`netstat`](http://man7.org/linux/man-pages/man8/netstat.8.html), which is generally packaged as ```net-tools```.
 
-## Basic Usage (supports two-factor authentication):
+## Usage
+
+### Basic
+If your organization does not use 2FA and you are able to log in with just your username and password:
+
+```bash
+sudo ./f5vpn-login.py user@host
+```
+
+### Two-Factor Authentication
 
 ```bash
 sudo ./f5vpn-login.py --sessionid=0123456789abcdef0123456789abcdef your.fully.qualified.hostname
@@ -29,14 +34,19 @@ You can find the session ID by going to the VPN host in a web browser, logging i
 ```javascript
 document.cookie.match(/MRHSession=(.*?); /)[1]
 ```
-
+#### Automation
 Or, if you have Greasemonkey or Violentmonkey installed, [click here](session-id-grabber.user.js) to install a script to automatically copy the session ID to your clipboard on login.
 
-If your organization does not use 2FA and you are able to log in with just your username and password:
-
+Finally, to complete the circuit of laziness, write yourself a shell function to read the session ID from the clipboard and pass it to the script:
 ```bash
-sudo ./f5vpn-login.py user@host
+function vpnlogin {
+  sessionid=$(xclip -o -selection clipboard)
+  echo "Session ID from clipboard: $sessionid"
+  sudo /path/to/f5vpn-login/f5vpn-login.py --sessionid $sessionid your.fully.qualified.hostname
+}
 ```
+
+>NOTE: The above is for Linux; on MacOS, use `pbpaste` instead of `xclip`
 
 ## DNS and Routing
 
