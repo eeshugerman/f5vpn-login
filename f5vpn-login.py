@@ -1006,8 +1006,8 @@ Cookie: MRHSession=%s\r
 
         if params.get('DNS0') and not skip_dns:
             platform.setup_dns(iface_name, serviceid,
-                               params['DNS0'].split(','),
-                               params['DNSSuffix0'].split(' '), revdns_domains, override_gateway)
+                               re.split('[, ]+',params['DNS0']),
+                               re.split('[, ]+',params['DNSSuffix0']), revdns_domains, override_gateway)
         print("VPN link is up!")
 
     try:
