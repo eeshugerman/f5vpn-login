@@ -315,6 +315,12 @@ class ResolvConfHelperDNSMixin:
         except:
             pass
 
+class ResolvectlHelperDNSMixin:
+    def setup_dns(self, iface_name, service_id, dns_servers, dns_domains, revdns_domains, override_gateway):
+        self.iface_name = iface_name
+        run_as_root(['/usr/bin/resolvectl', 'dns', iface_name] + dns_servers)
+        run_as_root(['/usr/bin/resolvectl', 'domain', iface_name] + dns_domains)
+
 
 class LinuxManualPlatform(ManualFrobbingDNSMixin, LinuxPlatform):
     pass
@@ -323,13 +329,18 @@ class LinuxManualPlatform(ManualFrobbingDNSMixin, LinuxPlatform):
 class LinuxResolvconfPlatform(ResolvConfHelperDNSMixin, LinuxPlatform):
     pass
 
+class LinuxPlatformSytemd(ResolvectlHelperDNSMixin, LinuxPlatform):
+    pass
+
 
 def get_platform():
     if sys.platform == "darwin":
         return DarwinPlatform()
     elif sys.platform == "linux":
         # Choose a dns resolver setup routine
-        if os.path.exists('/sbin/resolvconf'):
+        if os.path.exists('/usr/bin/resolvectl'):
+            return LinuxPlatformSytemd()
+        elif os.path.exists('/sbin/resolvconf'):
             return LinuxResolvconfPlatform()
         else:
             return LinuxManualPlatform()
